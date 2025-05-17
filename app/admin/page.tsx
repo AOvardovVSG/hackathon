@@ -32,7 +32,7 @@ export default async function AdminPage() {
   ]);
 
   return (
-    <div className="p-4">
+    <div className="pt-8">
       <AdminTabs
         initialPositions={positions || []}
         initialDepartments={departments || []}

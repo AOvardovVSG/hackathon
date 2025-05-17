@@ -6,6 +6,14 @@ import FormsTable from './FormsTable';
 import QuestionsTable from './QuestionsTable';
 import AssessmentsTable from './AssessmentsTable';
 import AdminGoalsTable from './AdminGoalsTable';
+import {
+  BuildingOffice2Icon,
+  UserGroupIcon,
+  MapPinIcon,
+  ClipboardDocumentListIcon,
+  ClipboardDocumentCheckIcon,
+  FlagIcon
+} from '@heroicons/react/24/outline';
 
 interface Lookup {
   id: string;
@@ -74,6 +82,7 @@ interface Tab {
   setData?: (data: Lookup[]) => void;
   type: TabType;
   displayField?: DisplayField;
+  icon: React.ElementType;
 }
 
 export default function AdminTabs({
@@ -119,7 +128,8 @@ export default function AdminTabs({
       data: positions,
       setData: setPositions,
       type: 'position',
-      displayField: 'name'
+      displayField: 'name',
+      icon: BuildingOffice2Icon
     },
     {
       id: 'departments',
@@ -127,7 +137,8 @@ export default function AdminTabs({
       data: departments,
       setData: setDepartments,
       type: 'department',
-      displayField: 'name'
+      displayField: 'name',
+      icon: UserGroupIcon
     },
     {
       id: 'sites',
@@ -135,90 +146,98 @@ export default function AdminTabs({
       data: sites,
       setData: setSites,
       type: 'site',
-      displayField: 'city'
+      displayField: 'city',
+      icon: MapPinIcon
     },
     {
       id: 'forms',
       name: 'Forms',
-      type: 'forms'
+      type: 'forms',
+      icon: ClipboardDocumentListIcon
     },
     {
       id: 'assessments',
       name: 'Assessments',
-      type: 'assessments'
+      type: 'assessments',
+      icon: ClipboardDocumentCheckIcon
     },
     {
       id: 'goals',
       name: 'Goals',
-      type: 'goals'
+      type: 'goals',
+      icon: FlagIcon
     }
   ];
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="mt-8">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-            {tabs.map((tab) => (
+    <div className="flex">
+      {/* Vertical Tabs */}
+      <div className="w-64 border-r border-gray-200">
+        <nav className="space-y-1" aria-label="Tabs">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
+                  w-full flex items-center px-3 py-2 text-sm font-medium rounded-md
                   ${activeTab === tab.id
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'bg-indigo-50 text-indigo-600'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }
                 `}
               >
+                <Icon className={`mr-3 h-5 w-5 ${activeTab === tab.id ? 'text-indigo-600' : 'text-gray-400'}`} />
                 {tab.name}
               </button>
-            ))}
-          </nav>
-        </div>
+            );
+          })}
+        </nav>
+      </div>
 
-        <div className="mt-4">
-          {tabs.map((tab) => (
-            <div
-              key={tab.id}
-              className={activeTab === tab.id ? 'block' : 'hidden'}
-            >
-              {tab.type === 'forms' ? (
-                <div className="space-y-8">
-                  <QuestionsTable
-                    questions={questions}
-                    onQuestionAdded={handleQuestionAdded}
-                  />
-                  <FormsTable
-                    forms={forms}
-                    questions={questions}
-                    onFormAdded={handleFormAdded}
-                  />
-                </div>
-              ) : tab.type === 'assessments' ? (
-                <AssessmentsTable
-                  assessments={assessments}
+      {/* Content Area */}
+      <div className="flex-1 pl-8">
+        {tabs.map((tab) => (
+          <div
+            key={tab.id}
+            className={activeTab === tab.id ? 'block' : 'hidden'}
+          >
+            {tab.type === 'forms' ? (
+              <div className="space-y-8">
+                <QuestionsTable
+                  questions={questions}
+                  onQuestionAdded={handleQuestionAdded}
+                />
+                <FormsTable
                   forms={forms}
-                  employees={employees}
-                  onAssessmentAdded={handleAssessmentAdded}
+                  questions={questions}
+                  onFormAdded={handleFormAdded}
                 />
-              ) : tab.type === 'goals' ? (
-                <AdminGoalsTable
-                  goals={goals}
-                  employees={employees}
-                  onGoalAdded={handleGoalAdded}
-                />
-              ) : (
-                <AdminTable
-                  data={tab.data || []}
-                  setData={tab.setData || (() => { })}
-                  type={tab.type}
-                  displayField={tab.displayField || 'name'}
-                />
-              )}
-            </div>
-          ))}
-        </div>
+              </div>
+            ) : tab.type === 'assessments' ? (
+              <AssessmentsTable
+                assessments={assessments}
+                forms={forms}
+                employees={employees}
+                onAssessmentAdded={handleAssessmentAdded}
+              />
+            ) : tab.type === 'goals' ? (
+              <AdminGoalsTable
+                goals={goals}
+                employees={employees}
+                onGoalAdded={handleGoalAdded}
+              />
+            ) : (
+              <AdminTable
+                data={tab.data || []}
+                setData={tab.setData || (() => { })}
+                type={tab.type}
+                displayField={tab.displayField || 'name'}
+              />
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

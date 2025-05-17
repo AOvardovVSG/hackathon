@@ -11,8 +11,7 @@ export default async function MyDocPage() {
 
   if (!userEmail) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-8">My Doc</h1>
+      <div className="p-4">
         <p>Please sign in to view your assessments.</p>
       </div>
     );
@@ -29,8 +28,7 @@ export default async function MyDocPage() {
 
   if (!userData) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-8">My Doc</h1>
+      <div className="p-4">
         <p>No employee record found for your account.</p>
       </div>
     );
@@ -51,8 +49,7 @@ export default async function MyDocPage() {
   if (assessmentsError) {
     console.error('Error fetching assessments:', assessmentsError);
     return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-8">My Doc</h1>
+      <div className="p-4">
         <p>Error loading assessments. Please try again later.</p>
       </div>
     );
@@ -81,8 +78,15 @@ export default async function MyDocPage() {
   console.log('Final assessments with questions:', assessmentsWithQuestions);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-8">My Doc</h1>
+    <div className="pt-8">
+      <div className="sm:flex sm:items-center mb-8">
+        <div className="sm:flex-auto">
+          <h2 className="text-xl font-semibold text-gray-900">My Documents</h2>
+          <p className="mt-2 text-sm text-gray-700">
+            View and manage your assessment documents and forms.
+          </p>
+        </div>
+      </div>
       <MyDocTable assessments={assessmentsWithQuestions} employeeId={userData.id} />
     </div>
   );
