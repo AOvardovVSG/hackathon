@@ -3,6 +3,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Navigation from './components/Navigation'
+import MainContent from './components/MainContent'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -21,9 +22,7 @@ export default function RootLayout({
       <html lang="en">
         <body className={inter.className}>
           <Navigation />
-          <main className="mx-auto max-w-[2000px] px-4 sm:px-6 lg:px-8 py-6">
-            {children}
-          </main>
+          <MainContent>{children}</MainContent>
         </body>
       </html>
     </ClerkProvider>
