@@ -22,6 +22,11 @@ interface UpdateEmployeeData extends CreateEmployeeData {
   id: string;
 }
 
+interface LookupData {
+  name?: string;
+  city?: string;
+}
+
 export async function createEmployee(data: CreateEmployeeData) {
   const supabase = await createClient();
 
@@ -104,5 +109,59 @@ export async function deleteEmployee(id: string) {
   } catch (error) {
     console.error('Error deleting employee:', error);
     return { success: false, error: 'Failed to delete employee' };
+  }
+}
+
+export async function createLookup(type: 'position' | 'department' | 'site', data: LookupData) {
+  const supabase = await createClient();
+
+  try {
+    const { data: newItem, error } = await supabase
+      .from(`${type}s`)
+      .insert([data])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { success: true, data: newItem };
+  } catch (error) {
+    console.error(`Error creating ${type}:`, error);
+    return { success: false, error: `Failed to create ${type}` };
+  }
+}
+
+export async function updateLookup(type: 'position' | 'department' | 'site', id: string, data: LookupData) {
+  const supabase = await createClient();
+
+  try {
+    const { data: updatedItem, error } = await supabase
+      .from(`${type}s`)
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { success: true, data: updatedItem };
+  } catch (error) {
+    console.error(`Error updating ${type}:`, error);
+    return { success: false, error: `Failed to update ${type}` };
+  }
+}
+
+export async function deleteLookup(type: 'position' | 'department' | 'site', id: string) {
+  const supabase = await createClient();
+
+  try {
+    const { error } = await supabase
+      .from(`${type}s`)
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error(`Error deleting ${type}:`, error);
+    return { success: false, error: `Failed to delete ${type}` };
   }
 } 
