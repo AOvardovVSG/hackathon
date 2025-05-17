@@ -196,7 +196,11 @@ export default function AdminGoalsTable({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(goal.due_date).toLocaleDateString()}
+                  {new Date(goal.due_date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric'
+                  })}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {goal.type}
@@ -395,7 +399,11 @@ export default function AdminGoalsTable({
                   Timeframe: {selectedGoal.timeframe}
                 </p>
                 <p className="text-sm text-gray-500">
-                  Due Date: {new Date(selectedGoal.due_date).toLocaleDateString()}
+                  Due Date: {new Date(selectedGoal.due_date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric'
+                  })}
                 </p>
                 <p className="text-sm text-gray-500">
                   Type: {selectedGoal.type}

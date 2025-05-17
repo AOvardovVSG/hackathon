@@ -49,10 +49,7 @@ interface CreateGoalData {
   }[];
 }
 
-interface UpdateTaskData {
-  taskId: string;
-  complete: boolean;
-}
+// Task interface is defined in UserGoalsTable component
 
 export async function createEmployee(data: CreateEmployeeData) {
   const supabase = await createClient();
@@ -392,7 +389,13 @@ export async function createGoal(data: CreateGoalData) {
         due_date: data.due_date,
         type: data.type
       })
-      .select()
+      .select(`
+        *,
+        employee:employees (
+          id,
+          display_name
+        )
+      `)
       .single();
 
     if (goalError) throw goalError;
@@ -439,7 +442,6 @@ export async function createGoal(data: CreateGoalData) {
 
 export async function updateTask(taskId: string, complete: boolean) {
   const supabase = await createClient();
-
   const { data, error } = await supabase
     .from('tasks')
     .update({ complete, updated_at: new Date().toISOString() })
@@ -448,7 +450,6 @@ export async function updateTask(taskId: string, complete: boolean) {
     .single();
 
   if (error) {
-    console.error('Error updating task:', error);
     return { success: false, error: error.message };
   }
 
