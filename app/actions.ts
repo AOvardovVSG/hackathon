@@ -335,4 +335,28 @@ export async function submitAssessment(
   } catch (error) {
     return { success: false, error };
   }
+}
+
+export async function getAssessmentAnswers(assessmentId: string, employeeId: string) {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from('question_answers')
+      .select('*')
+      .eq('assessment_id', assessmentId)
+      .eq('employee_id', employeeId);
+
+    if (error) throw error;
+
+    // Convert answers array to record
+    const answersRecord: Record<string, string> = {};
+    data?.forEach((answer: { question_id: string; answer: string }) => {
+      answersRecord[answer.question_id] = answer.answer;
+    });
+
+    return { success: true, data: answersRecord };
+  } catch (error) {
+    return { success: false, error: 'Failed to load answers' };
+  }
 } 

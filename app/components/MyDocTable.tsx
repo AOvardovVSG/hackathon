@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { PencilIcon } from '@heroicons/react/24/outline';
-import { submitAssessment } from '@/app/actions';
+import { submitAssessment, getAssessmentAnswers } from '@/app/actions';
+import Loading from '@/app/loading';
 
 interface Question {
   id: string;
@@ -35,7 +36,9 @@ export default function MyDocTable({ assessments: initialAssessments, employeeId
   const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isViewMode, setIsViewMode] = useState(false);
 
   // Update local state when props change
   useEffect(() => {
@@ -53,12 +56,36 @@ export default function MyDocTable({ assessments: initialAssessments, employeeId
     setAnswers(initialAnswers);
     setSelectedAssessment(assessment);
     setError(null);
+    setIsViewMode(false);
+  };
+
+  const handleView = async (assessment: Assessment) => {
+    if (!assessment.form) return;
+
+    setSelectedAssessment(assessment);
+    setIsViewMode(true);
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      const result = await getAssessmentAnswers(assessment.id, employeeId);
+
+      if (!result.success || !result.data) {
+        setError('Failed to load answers. Please try again.');
+        return;
+      }
+
+      setAnswers(result.data);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClose = () => {
     setSelectedAssessment(null);
     setAnswers({});
     setError(null);
+    setIsViewMode(false);
   };
 
   const handleAnswerChange = (questionId: string, value: string) => {
@@ -154,7 +181,11 @@ export default function MyDocTable({ assessments: initialAssessments, employeeId
                 {assessments.map((assessment) => {
                   const isCompleted = assessment.completed_employee_ids?.includes(employeeId);
                   return (
-                    <tr key={assessment.id}>
+                    <tr
+                      key={assessment.id}
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={() => isCompleted ? handleView(assessment) : handleEdit(assessment)}
+                    >
                       <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
                         {assessment.form?.name || 'Unknown Form'}
                       </td>
@@ -167,7 +198,10 @@ export default function MyDocTable({ assessments: initialAssessments, employeeId
                       <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                         {!isCompleted && (
                           <button
-                            onClick={() => handleEdit(assessment)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(assessment);
+                            }}
                             className="text-indigo-600 hover:text-indigo-900"
                           >
                             <PencilIcon className="h-5 w-5" aria-hidden="true" />
@@ -193,67 +227,93 @@ export default function MyDocTable({ assessments: initialAssessments, employeeId
                 {error}
               </div>
             )}
-            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-              {selectedAssessment.form.questions.map((question) => (
-                <div key={question.id} className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {question.name} <span className="text-red-500">*</span>
-                  </label>
-                  {question.type === 'Text' ? (
-                    <input
-                      type="text"
-                      required
-                      value={answers[question.id] || ''}
-                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
-                    />
-                  ) : (
-                    <div className="space-x-4">
-                      <label className="inline-flex items-center">
-                        <input
-                          type="radio"
-                          required
-                          name={`question-${question.id}`}
-                          value="Yes"
-                          checked={answers[question.id] === 'Yes'}
-                          onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Yes</span>
-                      </label>
-                      <label className="inline-flex items-center">
-                        <input
-                          type="radio"
-                          required
-                          name={`question-${question.id}`}
-                          value="No"
-                          checked={answers[question.id] === 'No'}
-                          onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">No</span>
-                      </label>
+            {isLoading ? (
+              <Loading message="Loading answers..." />
+            ) : isViewMode ? (
+              <div className="space-y-4">
+                {selectedAssessment.form.questions.map((question) => (
+                  <div key={question.id} className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {question.name}
+                    </label>
+                    <div className="mt-1 text-sm text-gray-900">
+                      {answers[question.id] || 'No answer provided'}
                     </div>
-                  )}
+                  </div>
+                ))}
+                <div className="mt-6 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  >
+                    Close
+                  </button>
                 </div>
-              ))}
-              <div className="mt-6 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                  {isSubmitting ? 'Submitting...' : 'Submit'}
-                </button>
               </div>
-            </form>
+            ) : (
+              <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+                {selectedAssessment.form.questions.map((question) => (
+                  <div key={question.id} className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {question.name} <span className="text-red-500">*</span>
+                    </label>
+                    {question.type === 'Text' ? (
+                      <input
+                        type="text"
+                        required
+                        value={answers[question.id] || ''}
+                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
+                      />
+                    ) : (
+                      <div className="space-x-4">
+                        <label className="inline-flex items-center">
+                          <input
+                            type="radio"
+                            required
+                            name={`question-${question.id}`}
+                            value="Yes"
+                            checked={answers[question.id] === 'Yes'}
+                            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                          />
+                          <span className="ml-2 text-sm text-gray-700">Yes</span>
+                        </label>
+                        <label className="inline-flex items-center">
+                          <input
+                            type="radio"
+                            required
+                            name={`question-${question.id}`}
+                            value="No"
+                            checked={answers[question.id] === 'No'}
+                            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                          />
+                          <span className="ml-2 text-sm text-gray-700">No</span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div className="mt-6 flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit'}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
