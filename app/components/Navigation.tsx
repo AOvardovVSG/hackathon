@@ -4,10 +4,9 @@ import { UserButton, useAuth } from '@clerk/nextjs';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Bars3Icon, XMarkIcon, HomeIcon, BuildingOfficeIcon, Cog6ToothIcon, DocumentTextIcon, FlagIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, BuildingOfficeIcon, Cog6ToothIcon, DocumentTextIcon, FlagIcon } from '@heroicons/react/24/outline';
 
 const navigation = [
-  { name: 'Home', href: '/', icon: HomeIcon },
   { name: 'Organization', href: '/org', icon: BuildingOfficeIcon },
   { name: 'My Doc', href: '/my-doc', icon: DocumentTextIcon },
   { name: 'Goals', href: '/goals', icon: FlagIcon },

@@ -138,7 +138,7 @@ export default function FormsForm({
               required
               value={formData.name}
               onChange={handleInputChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
             />
           </div>
 
@@ -156,7 +156,7 @@ export default function FormsForm({
                 required
                 value={formData.questions}
                 onChange={handleMultiSelectChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
                 size={5}
               >
                 {questions.map((question) => (
@@ -181,7 +181,7 @@ export default function FormsForm({
                     value={newQuestion.name}
                     onChange={handleNewQuestionChange}
                     placeholder="Question text"
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
                   />
                 </div>
                 <div className="w-32">
@@ -189,7 +189,7 @@ export default function FormsForm({
                     name="type"
                     value={newQuestion.type}
                     onChange={handleNewQuestionChange}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
                   >
                     <option value="text">Text</option>
                     <option value="yesNo">Yes/No</option>
@@ -218,7 +218,7 @@ export default function FormsForm({
                 id="employees"
                 value={formData.employees}
                 onChange={handleMultiSelectChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
                 size={5}
               >
                 {employees.map((employee) => (
