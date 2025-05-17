@@ -13,14 +13,16 @@ export default async function AdminPage() {
     { data: sites },
     { data: forms },
     { data: questions },
-    { data: employees }
+    { data: employees },
+    { data: assessments }
   ] = await Promise.all([
     supabase.from('positions').select('*').order('name', { ascending: true }),
     supabase.from('departments').select('*').order('name', { ascending: true }),
     supabase.from('sites').select('*').order('city', { ascending: true }),
     supabase.from('forms').select('*').order('name', { ascending: true }),
     supabase.from('questions').select('*').order('name', { ascending: true }),
-    supabase.from('employees').select('*').order('name', { ascending: true })
+    supabase.from('employees').select('*').order('display_name', { ascending: true }),
+    supabase.from('assessments').select('*, form:forms(*)').order('created_at', { ascending: false })
   ]);
 
   return (
@@ -33,6 +35,7 @@ export default async function AdminPage() {
         initialForms={forms || []}
         initialQuestions={questions || []}
         initialEmployees={employees || []}
+        initialAssessments={assessments || []}
       />
     </div>
   );

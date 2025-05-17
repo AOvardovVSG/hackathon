@@ -238,4 +238,36 @@ export async function createQuestion(data: QuestionData) {
     console.error('Error creating question:', error);
     return { success: false, error: 'Failed to create question' };
   }
+}
+
+export async function createAssessment(data: {
+  form_id: string;
+  employee_ids: string[];
+}) {
+  const supabase = await createClient();
+
+  try {
+    const { data: newAssessment, error } = await supabase
+      .from('assessments')
+      .insert([{
+        form_id: data.form_id,
+        employee_ids: data.employee_ids,
+        completed_employee_ids: []
+      }])
+      .select('*, form:forms(*)')
+      .single();
+
+    if (error) throw error;
+
+    return {
+      success: true,
+      data: newAssessment
+    };
+  } catch (error) {
+    console.error('Error creating assessment:', error);
+    return {
+      success: false,
+      error: 'Failed to create assessment'
+    };
+  }
 } 
