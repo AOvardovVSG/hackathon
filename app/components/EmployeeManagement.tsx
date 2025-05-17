@@ -12,36 +12,38 @@ interface Employee {
   last_name: string;
   display_name: string;
   email: string;
-  position: string;
+  position_id: string;
   address: string;
-  site: string;
-  manager?: string;
+  site_id: string;
+  manager_id?: string;
   employment_type: 'fullTime' | 'partTime';
   start_date: string;
   end_date?: string;
-  department: string;
+  department_id: string;
   picture_url?: string;
+}
+
+interface Lookup {
+  id: string;
+  name: string;
+  city?: string;
 }
 
 interface EmployeeManagementProps {
   initialEmployees: Employee[];
+  positions: Lookup[];
+  departments: Lookup[];
+  sites: Lookup[];
 }
 
-export default function EmployeeManagement({ initialEmployees }: EmployeeManagementProps) {
+export default function EmployeeManagement({ initialEmployees, positions, departments, sites }: EmployeeManagementProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
   const [error, setError] = useState<string | null>(null);
 
   const handleSuccess = async () => {
-    try {
-      const response = await fetch('/api/employees');
-      if (!response.ok) throw new Error('Failed to fetch employees');
-      const data = await response.json();
-      setEmployees(data);
-    } catch (err) {
-      console.error('Error refreshing employees:', err);
-      setError('Failed to refresh employees. Please try again later.');
-    }
+    // TODO: Update to fetch employees directly from Supabase
+    setIsFormOpen(false);
   };
 
   return (
@@ -68,13 +70,22 @@ export default function EmployeeManagement({ initialEmployees }: EmployeeManagem
         </div>
       )}
 
-      <EmployeeTable employees={employees} />
+      <EmployeeTable
+        employees={employees}
+        positions={positions}
+        departments={departments}
+        sites={sites}
+      />
 
       {isFormOpen && (
         <EmployeeForm
           isOpen={isFormOpen}
           onClose={() => setIsFormOpen(false)}
           onSuccess={handleSuccess}
+          positions={positions}
+          departments={departments}
+          sites={sites}
+          employees={employees}
         />
       )}
     </div>

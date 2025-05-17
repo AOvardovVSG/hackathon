@@ -4,13 +4,28 @@ import { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 
+interface Lookup {
+  id: string;
+  name: string;
+  city?: string;
+}
+
+interface Employee {
+  id: string;
+  display_name: string;
+}
+
 interface EmployeeFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  positions: Lookup[];
+  departments: Lookup[];
+  sites: Lookup[];
+  employees: Employee[];
 }
 
-export default function EmployeeForm({ isOpen, onClose, onSuccess }: EmployeeFormProps) {
+export default function EmployeeForm({ isOpen, onClose, onSuccess, positions, departments, sites, employees }: EmployeeFormProps) {
   const [formData, setFormData] = useState({
     firstName: '',
     middleName: '',
@@ -160,7 +175,9 @@ export default function EmployeeForm({ isOpen, onClose, onSuccess }: EmployeeFor
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
               >
                 <option value="">Select a position</option>
-                {/* TODO: Add positions from database */}
+                {positions.map((pos) => (
+                  <option key={pos.id} value={pos.name}>{pos.name}</option>
+                ))}
               </select>
             </div>
 
@@ -194,7 +211,9 @@ export default function EmployeeForm({ isOpen, onClose, onSuccess }: EmployeeFor
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
               >
                 <option value="">Select a site</option>
-                {/* TODO: Add sites from database */}
+                {sites.map((site) => (
+                  <option key={site.id} value={site.name || site.city}>{site.name || site.city}</option>
+                ))}
               </select>
             </div>
 
@@ -210,8 +229,10 @@ export default function EmployeeForm({ isOpen, onClose, onSuccess }: EmployeeFor
                 onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
               >
-                <option value="">Select a manager</option>
-                {/* TODO: Add managers from database */}
+                <option value="">No Manager</option>
+                {employees.map((emp) => (
+                  <option key={emp.id} value={emp.id}>{emp.display_name}</option>
+                ))}
               </select>
             </div>
 
@@ -247,7 +268,9 @@ export default function EmployeeForm({ isOpen, onClose, onSuccess }: EmployeeFor
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
               >
                 <option value="">Select a department</option>
-                {/* TODO: Add departments from database */}
+                {departments.map((dep) => (
+                  <option key={dep.id} value={dep.name}>{dep.name}</option>
+                ))}
               </select>
             </div>
 

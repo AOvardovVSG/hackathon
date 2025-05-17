@@ -10,22 +10,31 @@ interface Employee {
   last_name: string;
   display_name: string;
   email: string;
-  position: string;
+  position_id: string;
   address: string;
-  site: string;
-  manager?: string;
+  site_id: string;
+  manager_id?: string;
   employment_type: 'fullTime' | 'partTime';
   start_date: string;
   end_date?: string;
-  department: string;
+  department_id: string;
   picture_url?: string;
+}
+
+interface Lookup {
+  id: string;
+  name: string;
+  city?: string;
 }
 
 interface EmployeeTableProps {
   employees: Employee[];
+  positions: Lookup[];
+  departments: Lookup[];
+  sites: Lookup[];
 }
 
-export default function EmployeeTable({ employees }: EmployeeTableProps) {
+export default function EmployeeTable({ employees, positions, departments, sites }: EmployeeTableProps) {
   const [sortField, setSortField] = useState<keyof Employee>('first_name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
@@ -101,21 +110,21 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              onClick={() => handleSort('position')}
+              onClick={() => handleSort('position_id')}
             >
               Position
             </th>
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              onClick={() => handleSort('site')}
+              onClick={() => handleSort('site_id')}
             >
               Site
             </th>
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              onClick={() => handleSort('manager')}
+              onClick={() => handleSort('manager_id')}
             >
               Manager
             </th>
@@ -143,7 +152,7 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              onClick={() => handleSort('department')}
+              onClick={() => handleSort('department_id')}
             >
               Department
             </th>
@@ -153,46 +162,51 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {sortedEmployees.map((employee) => (
-            <tr key={employee.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-500 text-sm">
-                    {employee.first_name[0]}{employee.last_name[0]}
+          {sortedEmployees.map((employee) => {
+            const position = positions.find(p => p.id === employee.position_id);
+            const site = sites.find(s => s.id === employee.site_id);
+            const department = departments.find(d => d.id === employee.department_id);
+            const manager = employees.find(e => e.id === employee.manager_id);
+            return (
+              <tr key={employee.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-500 text-sm">
+                      {employee.first_name[0]}{employee.last_name[0]}
+                    </span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.first_name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.middle_name || '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.last_name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.display_name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.email}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{position ? position.name : '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{site ? site.city : '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{manager ? manager.display_name : '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${employee.employment_type === 'fullTime' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                    {employee.employment_type === 'fullTime' ? 'Full Time' : 'Part Time'}
                   </span>
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.first_name}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.middle_name || '-'}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.last_name}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.display_name}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.email}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.position}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.site}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.manager || '-'}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${employee.employment_type === 'fullTime' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                  }`}>
-                  {employee.employment_type === 'fullTime' ? 'Full Time' : 'Part Time'}
-                </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {formatDate(employee.start_date)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {formatDate(employee.end_date)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.department}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button className="text-indigo-600 hover:text-indigo-900 mr-4">
-                  <PencilIcon className="h-5 w-5" />
-                </button>
-                <button className="text-red-600 hover:text-red-900">
-                  <TrashIcon className="h-5 w-5" />
-                </button>
-              </td>
-            </tr>
-          ))}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {formatDate(employee.start_date)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {formatDate(employee.end_date)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{department ? department.name : '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button className="text-indigo-600 hover:text-indigo-900 mr-4">
+                    <PencilIcon className="h-5 w-5" />
+                  </button>
+                  <button className="text-red-600 hover:text-red-900">
+                    <TrashIcon className="h-5 w-5" />
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
