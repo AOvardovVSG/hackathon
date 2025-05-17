@@ -168,14 +168,16 @@ export default function FormsTable({
                 />
               </div>
 
-              <MultiSelect
-                label="Questions"
-                options={questionOptions}
-                value={form.questions}
-                onChange={handleQuestionsChange}
-                required
-                placeholder="Select questions..."
-              />
+              <div className="min-h-[300px]">
+                <MultiSelect
+                  label="Questions"
+                  options={questionOptions}
+                  value={form.questions}
+                  onChange={handleQuestionsChange}
+                  required
+                  placeholder="Select questions..."
+                />
+              </div>
 
               <div className="flex justify-end space-x-3 pt-6 border-t">
                 <button
