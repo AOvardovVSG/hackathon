@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { createEmployee } from '../actions';
 
 interface Lookup {
   id: string;
@@ -36,7 +37,7 @@ export default function EmployeeForm({ isOpen, onClose, onSuccess, positions, de
     address: '',
     site: '',
     manager: '',
-    employmentType: 'fullTime',
+    employmentType: 'fullTime' as 'fullTime' | 'partTime',
     startDate: '',
     endDate: '',
     department: '',
@@ -61,9 +62,43 @@ export default function EmployeeForm({ isOpen, onClose, onSuccess, positions, de
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission
-    onSuccess?.();
-    onClose();
+
+    try {
+      // Find the selected position, site, and department IDs
+      const position = positions.find(p => p.name === formData.position);
+      const site = sites.find(s => (s.name || s.city) === formData.site);
+      const department = departments.find(d => d.name === formData.department);
+
+      if (!position || !site || !department) {
+        throw new Error('Please select valid position, site, and department');
+      }
+
+      const result = await createEmployee({
+        firstName: formData.firstName,
+        middleName: formData.middleName,
+        lastName: formData.lastName,
+        displayName: formData.displayName,
+        email: formData.email,
+        positionId: position.id,
+        address: formData.address,
+        siteId: site.id,
+        managerId: formData.manager,
+        employmentType: formData.employmentType,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        departmentId: department.id
+      });
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      onSuccess?.();
+      onClose();
+    } catch (error) {
+      console.error('Error saving employee:', error);
+      // TODO: Show error message to user
+    }
   };
 
   if (!isOpen) return null;

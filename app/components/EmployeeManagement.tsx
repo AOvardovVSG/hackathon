@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import EmployeeTable from './EmployeeTable';
 import EmployeeForm from './EmployeeForm';
+import { createClient } from '@/utils/supabase/client';
 
 interface Employee {
   id: string;
@@ -42,8 +43,20 @@ export default function EmployeeManagement({ initialEmployees, positions, depart
   const [error, setError] = useState<string | null>(null);
 
   const handleSuccess = async () => {
-    // TODO: Update to fetch employees directly from Supabase
-    setIsFormOpen(false);
+    const supabase = createClient();
+    try {
+      const { data: newEmployees, error } = await supabase
+        .from('employees')
+        .select('*')
+        .order('first_name', { ascending: true });
+
+      if (error) throw error;
+      setEmployees(newEmployees || []);
+      setIsFormOpen(false);
+    } catch (error) {
+      console.error('Error refreshing employees:', error);
+      setError('Failed to refresh employee list');
+    }
   };
 
   return (
