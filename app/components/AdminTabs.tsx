@@ -156,15 +156,6 @@ export default function AdminTabs({
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
-      <div className="sm:flex sm:items-center">
-        <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Admin Panel</h1>
-          <p className="mt-2 text-sm text-gray-700">
-            Manage positions, departments, sites, forms, assessments, and goals.
-          </p>
-        </div>
-      </div>
-
       <div className="mt-8">
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8" aria-label="Tabs">

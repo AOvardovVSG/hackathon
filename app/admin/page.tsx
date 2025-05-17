@@ -14,25 +14,25 @@ export default async function AdminPage() {
     { data: assessments },
     { data: goals }
   ] = await Promise.all([
-    supabase.from('positions').select('*'),
-    supabase.from('departments').select('*'),
-    supabase.from('sites').select('*'),
-    supabase.from('forms').select('*'),
-    supabase.from('questions').select('*'),
-    supabase.from('employees').select('id, display_name'),
-    supabase.from('assessments').select('*'),
-    supabase.from('goals')
-      .select(`
-        *,
-        employee:employees(id, display_name),
-        tasks:tasks(*)
-      `)
-      .order('created_at', { ascending: false })
+    supabase.from('positions').select('*').order('name'),
+    supabase.from('departments').select('*').order('name'),
+    supabase.from('sites').select('*').order('city'),
+    supabase.from('forms').select('*').order('name'),
+    supabase.from('questions').select('*').order('name'),
+    supabase.from('employees').select('id, display_name').order('display_name'),
+    supabase.from('assessments').select('*, form:forms(*)').order('created_at', { ascending: false }),
+    supabase.from('goals').select(`
+      *,
+      tasks:tasks (*),
+      employee:employees (
+        id,
+        display_name
+      )
+    `).order('created_at', { ascending: false })
   ]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-8">Admin Dashboard</h1>
+    <div className="p-4">
       <AdminTabs
         initialPositions={positions || []}
         initialDepartments={departments || []}
