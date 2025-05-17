@@ -8,6 +8,7 @@ interface Task {
   id: string;
   title: string;
   complete: boolean;
+  updated_at: string;
 }
 
 interface Goal {
@@ -75,6 +76,15 @@ export default function UserGoalsTable({ goals: initialGoals }: UserGoalsTablePr
     return Math.round((completedTasks / goal.tasks.length) * 100);
   };
 
+  const getLastCheckIn = (goal: Goal) => {
+    if (!goal.tasks.length) return null;
+    const dates = goal.tasks
+      .filter(task => task.complete)
+      .map(task => new Date(task.updated_at).getTime());
+    if (!dates.length) return null;
+    return new Date(Math.max(...dates));
+  };
+
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center">
@@ -101,6 +111,9 @@ export default function UserGoalsTable({ goals: initialGoals }: UserGoalsTablePr
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Type
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Last Check-in
               </th>
             </tr>
           </thead>
@@ -130,6 +143,9 @@ export default function UserGoalsTable({ goals: initialGoals }: UserGoalsTablePr
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {goal.type}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {getLastCheckIn(goal)?.toLocaleString() || 'No check-ins yet'}
                 </td>
               </tr>
             ))}
@@ -167,6 +183,9 @@ export default function UserGoalsTable({ goals: initialGoals }: UserGoalsTablePr
                 <p className="text-sm text-gray-500">
                   Type: {selectedGoal.type}
                 </p>
+                <p className="text-sm text-gray-500">
+                  Last Check-in: {getLastCheckIn(selectedGoal)?.toLocaleString() || 'No check-ins yet'}
+                </p>
               </div>
 
               <div>
@@ -178,6 +197,11 @@ export default function UserGoalsTable({ goals: initialGoals }: UserGoalsTablePr
                     <div key={task.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-900">{task.title}</p>
+                        {task.complete && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Completed on {new Date(task.updated_at).toLocaleString()}
+                          </p>
+                        )}
                       </div>
                       <button
                         onClick={(e) => {

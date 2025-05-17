@@ -26,11 +26,7 @@ export default async function GoalsPage() {
     .from('goals')
     .select(`
       *,
-      tasks:tasks (
-        id,
-        title,
-        complete
-      ),
+      tasks:tasks (*),
       employee:employees!inner (
         display_name
       )
