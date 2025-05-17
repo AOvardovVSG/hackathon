@@ -1,30 +1,32 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 interface Employee {
   id: string;
-  firstName: string;
-  middleName?: string;
-  lastName: string;
-  displayName: string;
+  first_name: string;
+  middle_name?: string;
+  last_name: string;
+  display_name: string;
   email: string;
   position: string;
   address: string;
   site: string;
   manager?: string;
-  employmentType: 'fullTime' | 'partTime';
-  startDate: string;
-  endDate?: string;
+  employment_type: 'fullTime' | 'partTime';
+  start_date: string;
+  end_date?: string;
   department: string;
-  pictureUrl?: string;
+  picture_url?: string;
 }
 
-export default function EmployeeTable() {
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [sortField, setSortField] = useState<keyof Employee>('firstName');
+interface EmployeeTableProps {
+  employees: Employee[];
+}
+
+export default function EmployeeTable({ employees }: EmployeeTableProps) {
+  const [sortField, setSortField] = useState<keyof Employee>('first_name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const handleSort = (field: keyof Employee) => {
@@ -36,8 +38,25 @@ export default function EmployeeTable() {
     }
   };
 
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0]; // YYYY-MM-DD format
+  };
+
+  const sortedEmployees = [...employees].sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+
+    if (aValue === undefined || bValue === undefined) return 0;
+    if (aValue === null || bValue === null) return 0;
+
+    const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+    return sortDirection === 'asc' ? comparison : -comparison;
+  });
+
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto max-w-[2000px]">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
@@ -47,28 +66,28 @@ export default function EmployeeTable() {
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              onClick={() => handleSort('firstName')}
+              onClick={() => handleSort('first_name')}
             >
               First Name
             </th>
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              onClick={() => handleSort('middleName')}
+              onClick={() => handleSort('middle_name')}
             >
               Middle Name
             </th>
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              onClick={() => handleSort('lastName')}
+              onClick={() => handleSort('last_name')}
             >
               Last Name
             </th>
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              onClick={() => handleSort('displayName')}
+              onClick={() => handleSort('display_name')}
             >
               Display Name
             </th>
@@ -103,21 +122,21 @@ export default function EmployeeTable() {
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              onClick={() => handleSort('employmentType')}
+              onClick={() => handleSort('employment_type')}
             >
               Employment Type
             </th>
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              onClick={() => handleSort('startDate')}
+              onClick={() => handleSort('start_date')}
             >
               Start Date
             </th>
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              onClick={() => handleSort('endDate')}
+              onClick={() => handleSort('end_date')}
             >
               End Date
             </th>
@@ -134,42 +153,35 @@ export default function EmployeeTable() {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {employees.map((employee) => (
+          {sortedEmployees.map((employee) => (
             <tr key={employee.id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap">
-                {employee.pictureUrl ? (
-                  <div className="h-10 w-10 relative rounded-full overflow-hidden">
-                    <Image
-                      src={employee.pictureUrl}
-                      alt={employee.displayName}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-500 text-sm">
-                      {employee.firstName[0]}{employee.lastName[0]}
-                    </span>
-                  </div>
-                )}
+                <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-500 text-sm">
+                    {employee.first_name[0]}{employee.last_name[0]}
+                  </span>
+                </div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.firstName}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.middleName || '-'}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.lastName}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.displayName}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.first_name}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.middle_name || '-'}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.last_name}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.display_name}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.email}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.position}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.site}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.manager || '-'}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${employee.employmentType === 'fullTime' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${employee.employment_type === 'fullTime' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
                   }`}>
-                  {employee.employmentType === 'fullTime' ? 'Full Time' : 'Part Time'}
+                  {employee.employment_type === 'fullTime' ? 'Full Time' : 'Part Time'}
                 </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.startDate}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.endDate || '-'}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {formatDate(employee.start_date)}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {formatDate(employee.end_date)}
+              </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.department}</td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <button className="text-indigo-600 hover:text-indigo-900 mr-4">

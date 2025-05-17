@@ -7,9 +7,10 @@ import Image from 'next/image';
 interface EmployeeFormProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export default function EmployeeForm({ isOpen, onClose }: EmployeeFormProps) {
+export default function EmployeeForm({ isOpen, onClose, onSuccess }: EmployeeFormProps) {
   const [formData, setFormData] = useState({
     firstName: '',
     middleName: '',
@@ -46,6 +47,7 @@ export default function EmployeeForm({ isOpen, onClose }: EmployeeFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Implement form submission
+    onSuccess?.();
     onClose();
   };
 
