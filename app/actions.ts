@@ -356,7 +356,7 @@ export async function getAssessmentAnswers(assessmentId: string, employeeId: str
     });
 
     return { success: true, data: answersRecord };
-  } catch (error) {
+  } catch {
     return { success: false, error: 'Failed to load answers' };
   }
 } 

@@ -73,7 +73,7 @@ export default function AdminTabs({
   const [sites, setSites] = useState(initialSites);
   const [forms, setForms] = useState(initialForms);
   const [questions, setQuestions] = useState(initialQuestions);
-  const [employees, setEmployees] = useState(initialEmployees);
+  const [employees] = useState<Employee[]>(initialEmployees);
   const [assessments, setAssessments] = useState(initialAssessments);
   const [activeTab, setActiveTab] = useState('positions');
 
