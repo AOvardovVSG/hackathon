@@ -56,14 +56,14 @@ export default function EmployeeForm({
     lastName: '',
     displayName: '',
     email: '',
-    position: '',
+    positionId: '',
     address: '',
-    site: '',
-    manager: '',
+    siteId: '',
+    managerId: '',
     employmentType: 'fullTime' as 'fullTime' | 'partTime',
     startDate: '',
     endDate: '',
-    department: '',
+    departmentId: '',
     picture: null as File | null,
   });
 
@@ -81,14 +81,14 @@ export default function EmployeeForm({
         lastName: employeeToEdit.last_name,
         displayName: employeeToEdit.display_name || '',
         email: employeeToEdit.email,
-        position: position?.name || '',
+        positionId: position?.id || '',
         address: employeeToEdit.address,
-        site: site?.city || '',
-        manager: employeeToEdit.manager_id || '',
+        siteId: site?.id || '',
+        managerId: employeeToEdit.manager_id || '',
         employmentType: employeeToEdit.employment_type,
         startDate: employeeToEdit.start_date,
         endDate: employeeToEdit.end_date || '',
-        department: department?.name || '',
+        departmentId: department?.id || '',
         picture: null
       });
 
@@ -102,14 +102,14 @@ export default function EmployeeForm({
         lastName: '',
         displayName: '',
         email: '',
-        position: '',
+        positionId: '',
         address: '',
-        site: '',
-        manager: '',
+        siteId: '',
+        managerId: '',
         employmentType: 'fullTime',
         startDate: '',
         endDate: '',
-        department: '',
+        departmentId: '',
         picture: null
       });
       setPreviewUrl(null);
@@ -135,9 +135,9 @@ export default function EmployeeForm({
 
     try {
       // Find the selected position, site, and department IDs
-      const position = positions.find(p => p.name === formData.position);
-      const site = sites.find(s => (s.name || s.city) === formData.site);
-      const department = departments.find(d => d.name === formData.department);
+      const position = positions.find(p => p.id === formData.positionId);
+      const site = sites.find(s => s.id === formData.siteId);
+      const department = departments.find(d => d.id === formData.departmentId);
 
       if (!position || !site || !department) {
         throw new Error('Please select valid position, site, and department');
@@ -149,14 +149,14 @@ export default function EmployeeForm({
         lastName: formData.lastName,
         displayName: formData.displayName,
         email: formData.email,
-        positionId: position.id,
+        positionId: formData.positionId,
         address: formData.address,
-        siteId: site.id,
-        managerId: formData.manager,
+        siteId: formData.siteId,
+        managerId: formData.managerId || undefined,
         employmentType: formData.employmentType,
         startDate: formData.startDate,
-        endDate: formData.endDate,
-        departmentId: department.id
+        endDate: formData.endDate || undefined,
+        departmentId: formData.departmentId
       };
 
       const result = employeeToEdit
@@ -176,6 +176,9 @@ export default function EmployeeForm({
   };
 
   if (!isOpen) return null;
+
+  // Filter out the current employee from manager options if editing
+  const managerOptions = employees.filter(emp => !employeeToEdit || emp.id !== employeeToEdit.id);
 
   return (
     <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
@@ -274,20 +277,20 @@ export default function EmployeeForm({
 
             {/* Position */}
             <div>
-              <label htmlFor="position" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="positionId" className="block text-sm font-medium text-gray-700">
                 Position *
               </label>
               <select
-                name="position"
-                id="position"
+                name="positionId"
+                id="positionId"
                 required
-                value={formData.position}
+                value={formData.positionId}
                 onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
               >
                 <option value="">Select a position</option>
                 {positions.map((pos) => (
-                  <option key={pos.id} value={pos.name}>{pos.name}</option>
+                  <option key={pos.id} value={pos.id}>{pos.name}</option>
                 ))}
               </select>
             </div>
@@ -310,38 +313,38 @@ export default function EmployeeForm({
 
             {/* Site */}
             <div>
-              <label htmlFor="site" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="siteId" className="block text-sm font-medium text-gray-700">
                 Site (City) *
               </label>
               <select
-                name="site"
-                id="site"
+                name="siteId"
+                id="siteId"
                 required
-                value={formData.site}
+                value={formData.siteId}
                 onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
               >
                 <option value="">Select a site</option>
                 {sites.map((site) => (
-                  <option key={site.id} value={site.name || site.city}>{site.name || site.city}</option>
+                  <option key={site.id} value={site.id}>{site.name || site.city}</option>
                 ))}
               </select>
             </div>
 
             {/* Manager */}
             <div>
-              <label htmlFor="manager" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="managerId" className="block text-sm font-medium text-gray-700">
                 Manager
               </label>
               <select
-                name="manager"
-                id="manager"
-                value={formData.manager}
+                name="managerId"
+                id="managerId"
+                value={formData.managerId}
                 onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
               >
                 <option value="">No Manager</option>
-                {employees.map((emp) => (
+                {managerOptions.map((emp) => (
                   <option key={emp.id} value={emp.id}>{emp.display_name}</option>
                 ))}
               </select>
@@ -367,20 +370,20 @@ export default function EmployeeForm({
 
             {/* Department */}
             <div>
-              <label htmlFor="department" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="departmentId" className="block text-sm font-medium text-gray-700">
                 Department *
               </label>
               <select
-                name="department"
-                id="department"
+                name="departmentId"
+                id="departmentId"
                 required
-                value={formData.department}
+                value={formData.departmentId}
                 onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2"
               >
                 <option value="">Select a department</option>
                 {departments.map((dep) => (
-                  <option key={dep.id} value={dep.name}>{dep.name}</option>
+                  <option key={dep.id} value={dep.id}>{dep.name}</option>
                 ))}
               </select>
             </div>
