@@ -88,4 +88,21 @@ export async function updateEmployee(data: UpdateEmployeeData) {
     console.error('Error updating employee:', error);
     return { success: false, error: 'Failed to update employee' };
   }
+}
+
+export async function deleteEmployee(id: string) {
+  const supabase = await createClient();
+
+  try {
+    const { error } = await supabase
+      .from('employees')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting employee:', error);
+    return { success: false, error: 'Failed to delete employee' };
+  }
 } 

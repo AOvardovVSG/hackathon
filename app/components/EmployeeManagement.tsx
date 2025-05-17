@@ -5,6 +5,7 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import EmployeeTable from './EmployeeTable';
 import EmployeeForm from './EmployeeForm';
 import { createClient } from '@/utils/supabase/client';
+import { deleteEmployee } from '../actions';
 
 interface Employee {
   id: string;
@@ -66,6 +67,19 @@ export default function EmployeeManagement({ initialEmployees, positions, depart
     setIsFormOpen(true);
   };
 
+  const handleDelete = async (employee: Employee) => {
+    try {
+      const result = await deleteEmployee(employee.id);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      await handleSuccess(); // Refresh the list after successful deletion
+    } catch (error) {
+      console.error('Error deleting employee:', error);
+      setError('Failed to delete employee');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -99,6 +113,7 @@ export default function EmployeeManagement({ initialEmployees, positions, depart
         departments={departments}
         sites={sites}
         onEdit={handleEdit}
+        onDelete={handleDelete}
       />
 
       {isFormOpen && (
