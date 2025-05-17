@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import AdminTable from './AdminTable';
+import FormsTable from './FormsTable';
+import QuestionsTable from './QuestionsTable';
 
 interface Lookup {
   id: string;
@@ -9,16 +11,38 @@ interface Lookup {
   city?: string;
 }
 
+interface Question {
+  id: string;
+  name: string;
+  type: 'Text' | 'YesNoQuestion';
+}
+
+interface Form {
+  id: string;
+  name: string;
+  questions: string[];
+}
+
 interface AdminTabsProps {
   initialPositions: Lookup[];
   initialDepartments: Lookup[];
   initialSites: Lookup[];
+  initialForms: Form[];
+  initialQuestions: Question[];
 }
 
-export default function AdminTabs({ initialPositions, initialDepartments, initialSites }: AdminTabsProps) {
+export default function AdminTabs({
+  initialPositions,
+  initialDepartments,
+  initialSites,
+  initialForms,
+  initialQuestions
+}: AdminTabsProps) {
   const [positions, setPositions] = useState(initialPositions);
   const [departments, setDepartments] = useState(initialDepartments);
   const [sites, setSites] = useState(initialSites);
+  const [forms, setForms] = useState(initialForms);
+  const [questions, setQuestions] = useState(initialQuestions);
   const [activeTab, setActiveTab] = useState('positions');
 
   const tabs = [
@@ -45,8 +69,21 @@ export default function AdminTabs({ initialPositions, initialDepartments, initia
       setData: setSites,
       type: 'site',
       displayField: 'city'
+    },
+    {
+      id: 'forms',
+      name: 'Forms',
+      type: 'forms'
     }
   ];
+
+  const handleQuestionAdded = (newQuestion: Question) => {
+    setQuestions(prev => [...prev, newQuestion]);
+  };
+
+  const handleFormAdded = (newForm: Form) => {
+    setForms(prev => [...prev, newForm]);
+  };
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -54,7 +91,7 @@ export default function AdminTabs({ initialPositions, initialDepartments, initia
         <div className="sm:flex-auto">
           <h1 className="text-2xl font-semibold text-gray-900">Admin Panel</h1>
           <p className="mt-2 text-sm text-gray-700">
-            Manage positions, departments, and sites.
+            Manage positions, departments, sites, and forms.
           </p>
         </div>
       </div>
@@ -86,12 +123,26 @@ export default function AdminTabs({ initialPositions, initialDepartments, initia
               key={tab.id}
               className={activeTab === tab.id ? 'block' : 'hidden'}
             >
-              <AdminTable
-                data={tab.data}
-                setData={tab.setData}
-                type={tab.type}
-                displayField={tab.displayField}
-              />
+              {tab.type === 'forms' ? (
+                <div className="space-y-8">
+                  <QuestionsTable
+                    questions={questions}
+                    onQuestionAdded={handleQuestionAdded}
+                  />
+                  <FormsTable
+                    forms={forms}
+                    questions={questions}
+                    onFormAdded={handleFormAdded}
+                  />
+                </div>
+              ) : (
+                <AdminTable
+                  data={tab.data}
+                  setData={tab.setData}
+                  type={tab.type}
+                  displayField={tab.displayField}
+                />
+              )}
             </div>
           ))}
         </div>

@@ -1,27 +1,39 @@
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import AdminTabs from '../components/AdminTabs';
 
 export default async function AdminPage() {
-  const supabase = await createClient();
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const [
-    { data: positions, error: positionsError },
-    { data: departments, error: departmentsError },
-    { data: sites, error: sitesError }
+    { data: positions },
+    { data: departments },
+    { data: sites },
+    { data: forms },
+    { data: questions },
+    { data: employees }
   ] = await Promise.all([
     supabase.from('positions').select('*').order('name', { ascending: true }),
     supabase.from('departments').select('*').order('name', { ascending: true }),
-    supabase.from('sites').select('*').order('city', { ascending: true })
+    supabase.from('sites').select('*').order('city', { ascending: true }),
+    supabase.from('forms').select('*').order('name', { ascending: true }),
+    supabase.from('questions').select('*').order('name', { ascending: true }),
+    supabase.from('employees').select('*').order('name', { ascending: true })
   ]);
 
-  console.log('Data fetched:', { positions, departments, sites });
-  console.log('Errors if any:', { positionsError, departmentsError, sitesError });
-
   return (
-    <AdminTabs
-      initialPositions={positions || []}
-      initialDepartments={departments || []}
-      initialSites={sites || []}
-    />
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-8">Admin Dashboard</h1>
+      <AdminTabs
+        initialPositions={positions || []}
+        initialDepartments={departments || []}
+        initialSites={sites || []}
+        initialForms={forms || []}
+        initialQuestions={questions || []}
+        initialEmployees={employees || []}
+      />
+    </div>
   );
 } 

@@ -27,6 +27,16 @@ interface LookupData {
   city?: string;
 }
 
+interface FormData {
+  name: string;
+  questions: string[];
+}
+
+interface QuestionData {
+  name: string;
+  type: 'Text' | 'YesNoQuestion';
+}
+
 export async function createEmployee(data: CreateEmployeeData) {
   const supabase = await createClient();
 
@@ -163,5 +173,69 @@ export async function deleteLookup(type: 'position' | 'department' | 'site', id:
   } catch (error) {
     console.error(`Error deleting ${type}:`, error);
     return { success: false, error: `Failed to delete ${type}` };
+  }
+}
+
+export async function createForm(data: FormData) {
+  const supabase = await createClient();
+
+  try {
+    const { data: newForm, error } = await supabase
+      .from('forms')
+      .insert([{
+        name: data.name,
+        questions: data.questions
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return { success: true, data: newForm };
+  } catch (error) {
+    console.error('Error creating form:', error);
+    return { success: false, error: 'Failed to create form' };
+  }
+}
+
+export async function updateForm(id: string, data: FormData) {
+  const supabase = await createClient();
+
+  try {
+    const { data: updatedForm, error } = await supabase
+      .from('forms')
+      .update({
+        name: data.name,
+        questions: data.questions
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return { success: true, data: updatedForm };
+  } catch (error) {
+    console.error('Error updating form:', error);
+    return { success: false, error: 'Failed to update form' };
+  }
+}
+
+export async function createQuestion(data: QuestionData) {
+  const supabase = await createClient();
+
+  try {
+    const { data: newQuestion, error } = await supabase
+      .from('questions')
+      .insert([data])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return { success: true, data: newQuestion };
+  } catch (error) {
+    console.error('Error creating question:', error);
+    return { success: false, error: 'Failed to create question' };
   }
 } 
