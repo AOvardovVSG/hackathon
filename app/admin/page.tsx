@@ -1,11 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/utils/supabase/server';
 import AdminTabs from '../components/AdminTabs';
 
 export default async function AdminPage() {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabase = await createClient();
 
   const [
     { data: positions },
@@ -14,15 +11,23 @@ export default async function AdminPage() {
     { data: forms },
     { data: questions },
     { data: employees },
-    { data: assessments }
+    { data: assessments },
+    { data: goals }
   ] = await Promise.all([
-    supabase.from('positions').select('*').order('name', { ascending: true }),
-    supabase.from('departments').select('*').order('name', { ascending: true }),
-    supabase.from('sites').select('*').order('city', { ascending: true }),
-    supabase.from('forms').select('*').order('name', { ascending: true }),
-    supabase.from('questions').select('*').order('name', { ascending: true }),
-    supabase.from('employees').select('*').order('display_name', { ascending: true }),
-    supabase.from('assessments').select('*, form:forms(*)').order('created_at', { ascending: false })
+    supabase.from('positions').select('*'),
+    supabase.from('departments').select('*'),
+    supabase.from('sites').select('*'),
+    supabase.from('forms').select('*'),
+    supabase.from('questions').select('*'),
+    supabase.from('employees').select('id, display_name'),
+    supabase.from('assessments').select('*'),
+    supabase.from('goals')
+      .select(`
+        *,
+        employee:employees(id, display_name),
+        tasks:tasks(*)
+      `)
+      .order('created_at', { ascending: false })
   ]);
 
   return (
@@ -36,6 +41,7 @@ export default async function AdminPage() {
         initialQuestions={questions || []}
         initialEmployees={employees || []}
         initialAssessments={assessments || []}
+        initialGoals={goals || []}
       />
     </div>
   );

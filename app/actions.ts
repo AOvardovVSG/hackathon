@@ -37,6 +37,23 @@ interface QuestionData {
   type: 'Text' | 'YesNoQuestion';
 }
 
+interface CreateGoalData {
+  title: string;
+  employee_id: string;
+  timeframe: string;
+  due_date: string;
+  type: 'Personal' | 'Department' | 'Company';
+  tasks: {
+    title: string;
+    complete: boolean;
+  }[];
+}
+
+interface UpdateTaskData {
+  taskId: string;
+  complete: boolean;
+}
+
 export async function createEmployee(data: CreateEmployeeData) {
   const supabase = await createClient();
 
@@ -359,4 +376,81 @@ export async function getAssessmentAnswers(assessmentId: string, employeeId: str
   } catch {
     return { success: false, error: 'Failed to load answers' };
   }
+}
+
+export async function createGoal(data: CreateGoalData) {
+  try {
+    const supabase = await createClient();
+
+    // Start a transaction
+    const { data: goal, error: goalError } = await supabase
+      .from('goals')
+      .insert({
+        title: data.title,
+        employee_id: data.employee_id,
+        timeframe: data.timeframe,
+        due_date: data.due_date,
+        type: data.type
+      })
+      .select()
+      .single();
+
+    if (goalError) throw goalError;
+
+    // Create tasks
+    const { data: tasks, error: tasksError } = await supabase
+      .from('tasks')
+      .insert(
+        data.tasks.map(task => ({
+          title: task.title,
+          complete: task.complete
+        }))
+      )
+      .select();
+
+    if (tasksError) throw tasksError;
+
+    // Create goal-task relationships
+    const { error: relationshipError } = await supabase
+      .from('goal_tasks')
+      .insert(
+        tasks.map(task => ({
+          goal_id: goal.id,
+          task_id: task.id
+        }))
+      );
+
+    if (relationshipError) throw relationshipError;
+
+    return {
+      success: true,
+      data: {
+        ...goal,
+        tasks
+      }
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error
+    };
+  }
+}
+
+export async function updateTask(taskId: string, complete: boolean) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('tasks')
+    .update({ complete, updated_at: new Date().toISOString() })
+    .eq('id', taskId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating task:', error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true, data };
 } 

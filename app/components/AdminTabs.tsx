@@ -5,6 +5,7 @@ import AdminTable from './AdminTable';
 import FormsTable from './FormsTable';
 import QuestionsTable from './QuestionsTable';
 import AssessmentsTable from './AssessmentsTable';
+import AdminGoalsTable from './AdminGoalsTable';
 
 interface Lookup {
   id: string;
@@ -37,6 +38,21 @@ interface Assessment {
   form?: Form;
 }
 
+interface Goal {
+  id: string;
+  title: string;
+  employee_id: string;
+  timeframe: string;
+  due_date: string;
+  type: 'Personal' | 'Department' | 'Company';
+  tasks: {
+    id: string;
+    title: string;
+    complete: boolean;
+  }[];
+  employee: Employee;
+}
+
 interface AdminTabsProps {
   initialPositions: Lookup[];
   initialDepartments: Lookup[];
@@ -45,9 +61,10 @@ interface AdminTabsProps {
   initialQuestions: Question[];
   initialEmployees: Employee[];
   initialAssessments: Assessment[];
+  initialGoals: Goal[];
 }
 
-type TabType = 'position' | 'department' | 'site' | 'forms' | 'assessments';
+type TabType = 'position' | 'department' | 'site' | 'forms' | 'assessments' | 'goals';
 type DisplayField = 'name' | 'city';
 
 interface Tab {
@@ -66,7 +83,8 @@ export default function AdminTabs({
   initialForms,
   initialQuestions,
   initialEmployees,
-  initialAssessments
+  initialAssessments,
+  initialGoals
 }: AdminTabsProps) {
   const [positions, setPositions] = useState(initialPositions);
   const [departments, setDepartments] = useState(initialDepartments);
@@ -75,7 +93,24 @@ export default function AdminTabs({
   const [questions, setQuestions] = useState(initialQuestions);
   const [employees] = useState<Employee[]>(initialEmployees);
   const [assessments, setAssessments] = useState(initialAssessments);
+  const [goals, setGoals] = useState(initialGoals);
   const [activeTab, setActiveTab] = useState('positions');
+
+  const handleQuestionAdded = (newQuestion: Question) => {
+    setQuestions(prev => [...prev, newQuestion]);
+  };
+
+  const handleFormAdded = (newForm: Form) => {
+    setForms(prev => [...prev, newForm]);
+  };
+
+  const handleAssessmentAdded = (newAssessment: Assessment) => {
+    setAssessments(prev => [...prev, newAssessment]);
+  };
+
+  const handleGoalAdded = (newGoal: Goal) => {
+    setGoals(prev => [...prev, newGoal]);
+  };
 
   const tabs: Tab[] = [
     {
@@ -111,20 +146,13 @@ export default function AdminTabs({
       id: 'assessments',
       name: 'Assessments',
       type: 'assessments'
+    },
+    {
+      id: 'goals',
+      name: 'Goals',
+      type: 'goals'
     }
   ];
-
-  const handleQuestionAdded = (newQuestion: Question) => {
-    setQuestions(prev => [...prev, newQuestion]);
-  };
-
-  const handleFormAdded = (newForm: Form) => {
-    setForms(prev => [...prev, newForm]);
-  };
-
-  const handleAssessmentAdded = (newAssessment: Assessment) => {
-    setAssessments(prev => [...prev, newAssessment]);
-  };
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -132,7 +160,7 @@ export default function AdminTabs({
         <div className="sm:flex-auto">
           <h1 className="text-2xl font-semibold text-gray-900">Admin Panel</h1>
           <p className="mt-2 text-sm text-gray-700">
-            Manage positions, departments, sites, forms, and assessments.
+            Manage positions, departments, sites, forms, assessments, and goals.
           </p>
         </div>
       </div>
@@ -182,6 +210,12 @@ export default function AdminTabs({
                   forms={forms}
                   employees={employees}
                   onAssessmentAdded={handleAssessmentAdded}
+                />
+              ) : tab.type === 'goals' ? (
+                <AdminGoalsTable
+                  goals={goals}
+                  employees={employees}
+                  onGoalAdded={handleGoalAdded}
                 />
               ) : (
                 <AdminTable
