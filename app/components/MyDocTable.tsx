@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { PencilIcon } from '@heroicons/react/24/outline';
-import { createClient } from '@/utils/supabase/client';
+import { submitAssessment } from '@/app/actions';
 
 interface Question {
   id: string;
@@ -35,7 +35,7 @@ export default function MyDocTable({ assessments: initialAssessments, employeeId
   const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const supabase = createClient();
+  const [error, setError] = useState<string | null>(null);
 
   // Update local state when props change
   useEffect(() => {
@@ -52,11 +52,13 @@ export default function MyDocTable({ assessments: initialAssessments, employeeId
     });
     setAnswers(initialAnswers);
     setSelectedAssessment(assessment);
+    setError(null);
   };
 
   const handleClose = () => {
     setSelectedAssessment(null);
     setAnswers({});
+    setError(null);
   };
 
   const handleAnswerChange = (questionId: string, value: string) => {
@@ -66,20 +68,48 @@ export default function MyDocTable({ assessments: initialAssessments, employeeId
     }));
   };
 
+  const validateAnswers = () => {
+    if (!selectedAssessment?.form) return false;
+
+    // Check if all questions have answers
+    const allQuestionsAnswered = selectedAssessment.form.questions.every(
+      (question) => answers[question.id]?.trim() !== ''
+    );
+
+    if (!allQuestionsAnswered) {
+      setError('Please answer all questions before submitting.');
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async () => {
-    if (!selectedAssessment) return;
+    if (!selectedAssessment?.form) return;
+
+    // Validate all questions are answered
+    if (!validateAnswers()) return;
 
     setIsSubmitting(true);
-    try {
-      // Update completed_employee_ids
-      const { error: updateError } = await supabase
-        .from('assessments')
-        .update({
-          completed_employee_ids: [...(selectedAssessment.completed_employee_ids || []), employeeId],
-        })
-        .eq('id', selectedAssessment.id);
+    setError(null);
 
-      if (updateError) throw updateError;
+    try {
+      // Format answers for submission
+      const formattedAnswers = selectedAssessment.form.questions.map(question => ({
+        questionId: question.id,
+        answer: answers[question.id] || ''
+      }));
+
+      const result = await submitAssessment(
+        selectedAssessment.id,
+        employeeId,
+        selectedAssessment.completed_employee_ids || [],
+        formattedAnswers
+      );
+
+      if (!result.success) {
+        throw new Error(typeof result.error === 'string' ? result.error : 'Failed to submit assessment');
+      }
 
       // Update local state
       setAssessments(prevAssessments =>
@@ -94,8 +124,8 @@ export default function MyDocTable({ assessments: initialAssessments, employeeId
       );
 
       handleClose();
-    } catch (error) {
-      console.error('Error submitting assessment:', error);
+    } catch {
+      setError('Failed to submit assessment. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -158,11 +188,16 @@ export default function MyDocTable({ assessments: initialAssessments, employeeId
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-semibold mb-4">{selectedAssessment.form.name}</h2>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
+                {error}
+              </div>
+            )}
             <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
               {selectedAssessment.form.questions.map((question) => (
                 <div key={question.id} className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {question.name}
+                    {question.name} <span className="text-red-500">*</span>
                   </label>
                   {question.type === 'Text' ? (
                     <input

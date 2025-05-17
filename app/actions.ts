@@ -270,4 +270,69 @@ export async function createAssessment(data: {
       error: 'Failed to create assessment'
     };
   }
+}
+
+export async function updateAssessmentCompletion(assessmentId: string, employeeId: string, completedEmployeeIds: string[]) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('assessments')
+    .update({
+      completed_employee_ids: [...completedEmployeeIds, employeeId],
+    })
+    .eq('id', assessmentId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function saveQuestionAnswers(
+  employeeId: string,
+  assessmentId: string,
+  answers: { questionId: string; answer: string }[]
+) {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from('question_answers')
+      .insert(
+        answers.map(({ questionId, answer }) => ({
+          employee_id: employeeId,
+          assessment_id: assessmentId,
+          question_id: questionId,
+          answer,
+        }))
+      )
+      .select();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function submitAssessment(
+  assessmentId: string,
+  employeeId: string,
+  completedEmployeeIds: string[],
+  answers: { questionId: string; answer: string }[]
+) {
+  try {
+    // Update assessment completion status
+    const updatedAssessment = await updateAssessmentCompletion(assessmentId, employeeId, completedEmployeeIds);
+    
+    // Save all answers
+    const savedAnswers = await saveQuestionAnswers(employeeId, assessmentId, answers);
+
+    return { success: true, data: { assessment: updatedAssessment, answers: savedAnswers } };
+  } catch (error) {
+    return { success: false, error };
+  }
 } 
