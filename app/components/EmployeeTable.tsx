@@ -32,9 +32,10 @@ interface EmployeeTableProps {
   positions: Lookup[];
   departments: Lookup[];
   sites: Lookup[];
+  onEdit: (employee: Employee) => void;
 }
 
-export default function EmployeeTable({ employees, positions, departments, sites }: EmployeeTableProps) {
+export default function EmployeeTable({ employees, positions, departments, sites, onEdit }: EmployeeTableProps) {
   const [sortField, setSortField] = useState<keyof Employee>('first_name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
@@ -197,7 +198,10 @@ export default function EmployeeTable({ employees, positions, departments, sites
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{department ? department.name : '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button className="text-indigo-600 hover:text-indigo-900 mr-4">
+                  <button
+                    onClick={() => onEdit(employee)}
+                    className="text-indigo-600 hover:text-indigo-900 mr-4"
+                  >
                     <PencilIcon className="h-5 w-5" />
                   </button>
                   <button className="text-red-600 hover:text-red-900">

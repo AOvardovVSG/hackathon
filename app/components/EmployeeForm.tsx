@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { createEmployee } from '../actions';
+import { createEmployee, updateEmployee } from '../actions';
 
 interface Lookup {
   id: string;
@@ -14,6 +14,19 @@ interface Lookup {
 interface Employee {
   id: string;
   display_name: string;
+  first_name: string;
+  middle_name?: string;
+  last_name: string;
+  email: string;
+  position_id: string;
+  address: string;
+  site_id: string;
+  manager_id?: string;
+  employment_type: 'fullTime' | 'partTime';
+  start_date: string;
+  end_date?: string;
+  department_id: string;
+  picture_url?: string;
 }
 
 interface EmployeeFormProps {
@@ -24,9 +37,19 @@ interface EmployeeFormProps {
   departments: Lookup[];
   sites: Lookup[];
   employees: Employee[];
+  employeeToEdit?: Employee;
 }
 
-export default function EmployeeForm({ isOpen, onClose, onSuccess, positions, departments, sites, employees }: EmployeeFormProps) {
+export default function EmployeeForm({
+  isOpen,
+  onClose,
+  onSuccess,
+  positions,
+  departments,
+  sites,
+  employees,
+  employeeToEdit
+}: EmployeeFormProps) {
   const [formData, setFormData] = useState({
     firstName: '',
     middleName: '',
@@ -45,6 +68,53 @@ export default function EmployeeForm({ isOpen, onClose, onSuccess, positions, de
   });
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (employeeToEdit) {
+      const position = positions.find(p => p.id === employeeToEdit.position_id);
+      const site = sites.find(s => s.id === employeeToEdit.site_id);
+      const department = departments.find(d => d.id === employeeToEdit.department_id);
+
+      setFormData({
+        firstName: employeeToEdit.first_name,
+        middleName: employeeToEdit.middle_name || '',
+        lastName: employeeToEdit.last_name,
+        displayName: employeeToEdit.display_name || '',
+        email: employeeToEdit.email,
+        position: position?.name || '',
+        address: employeeToEdit.address,
+        site: site?.city || '',
+        manager: employeeToEdit.manager_id || '',
+        employmentType: employeeToEdit.employment_type,
+        startDate: employeeToEdit.start_date,
+        endDate: employeeToEdit.end_date || '',
+        department: department?.name || '',
+        picture: null
+      });
+
+      if (employeeToEdit.picture_url) {
+        setPreviewUrl(employeeToEdit.picture_url);
+      }
+    } else {
+      setFormData({
+        firstName: '',
+        middleName: '',
+        lastName: '',
+        displayName: '',
+        email: '',
+        position: '',
+        address: '',
+        site: '',
+        manager: '',
+        employmentType: 'fullTime',
+        startDate: '',
+        endDate: '',
+        department: '',
+        picture: null
+      });
+      setPreviewUrl(null);
+    }
+  }, [employeeToEdit, positions, sites, departments]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -73,7 +143,7 @@ export default function EmployeeForm({ isOpen, onClose, onSuccess, positions, de
         throw new Error('Please select valid position, site, and department');
       }
 
-      const result = await createEmployee({
+      const employeeData = {
         firstName: formData.firstName,
         middleName: formData.middleName,
         lastName: formData.lastName,
@@ -87,7 +157,11 @@ export default function EmployeeForm({ isOpen, onClose, onSuccess, positions, de
         startDate: formData.startDate,
         endDate: formData.endDate,
         departmentId: department.id
-      });
+      };
+
+      const result = employeeToEdit
+        ? await updateEmployee({ ...employeeData, id: employeeToEdit.id })
+        : await createEmployee(employeeData);
 
       if (!result.success) {
         throw new Error(result.error);
@@ -107,7 +181,9 @@ export default function EmployeeForm({ isOpen, onClose, onSuccess, positions, de
     <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">Add New Employee</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {employeeToEdit ? 'Edit Employee' : 'Add New Employee'}
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-500"

@@ -41,6 +41,7 @@ export default function EmployeeManagement({ initialEmployees, positions, depart
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
   const [error, setError] = useState<string | null>(null);
+  const [employeeToEdit, setEmployeeToEdit] = useState<Employee | undefined>();
 
   const handleSuccess = async () => {
     const supabase = createClient();
@@ -53,10 +54,16 @@ export default function EmployeeManagement({ initialEmployees, positions, depart
       if (error) throw error;
       setEmployees(newEmployees || []);
       setIsFormOpen(false);
+      setEmployeeToEdit(undefined);
     } catch (error) {
       console.error('Error refreshing employees:', error);
       setError('Failed to refresh employee list');
     }
+  };
+
+  const handleEdit = (employee: Employee) => {
+    setEmployeeToEdit(employee);
+    setIsFormOpen(true);
   };
 
   return (
@@ -64,7 +71,10 @@ export default function EmployeeManagement({ initialEmployees, positions, depart
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold text-gray-900">Employee Management</h1>
         <button
-          onClick={() => setIsFormOpen(true)}
+          onClick={() => {
+            setEmployeeToEdit(undefined);
+            setIsFormOpen(true);
+          }}
           className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
@@ -88,17 +98,22 @@ export default function EmployeeManagement({ initialEmployees, positions, depart
         positions={positions}
         departments={departments}
         sites={sites}
+        onEdit={handleEdit}
       />
 
       {isFormOpen && (
         <EmployeeForm
           isOpen={isFormOpen}
-          onClose={() => setIsFormOpen(false)}
+          onClose={() => {
+            setIsFormOpen(false);
+            setEmployeeToEdit(undefined);
+          }}
           onSuccess={handleSuccess}
           positions={positions}
           departments={departments}
           sites={sites}
           employees={employees}
+          employeeToEdit={employeeToEdit}
         />
       )}
     </div>

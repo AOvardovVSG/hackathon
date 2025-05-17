@@ -18,6 +18,10 @@ interface CreateEmployeeData {
   departmentId: string;
 }
 
+interface UpdateEmployeeData extends CreateEmployeeData {
+  id: string;
+}
+
 export async function createEmployee(data: CreateEmployeeData) {
   const supabase = await createClient();
 
@@ -50,5 +54,38 @@ export async function createEmployee(data: CreateEmployeeData) {
   } catch (error) {
     console.error('Error creating employee:', error);
     return { success: false, error: 'Failed to create employee' };
+  }
+}
+
+export async function updateEmployee(data: UpdateEmployeeData) {
+  const supabase = await createClient();
+
+  try {
+    const { data: updatedEmployee, error } = await supabase
+      .from('employees')
+      .update({
+        first_name: data.firstName,
+        middle_name: data.middleName || null,
+        last_name: data.lastName,
+        display_name: data.displayName || `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        position_id: data.positionId,
+        address: data.address,
+        site_id: data.siteId,
+        manager_id: data.managerId || null,
+        employment_type: data.employmentType,
+        start_date: data.startDate,
+        end_date: data.endDate || null,
+        department_id: data.departmentId
+      })
+      .eq('id', data.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { success: true, data: updatedEmployee };
+  } catch (error) {
+    console.error('Error updating employee:', error);
+    return { success: false, error: 'Failed to update employee' };
   }
 } 
